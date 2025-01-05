@@ -1,0 +1,31 @@
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+import yfinance as yf
+
+def fetch_financial_data(ticker):
+    stock = yf.Ticker(ticker)
+    data = stock.history(period='max')
+    return stock, data
+
+def plot_stock_data(data, start_date, end_date):
+    data = data.loc[start_date:end_date]
+    data.reset_index(inplace=True)
+    data.set_index('Date', drop=True, inplace=True)
+
+    # Plotting
+    data.resample(rule='A').max()['Open'].plot(title='Annual Max Open Price')
+    plt.show()
+    data.resample(rule='A').max()['Volume'].plot(title='Annual Max Volume')
+    plt.show()
+    data.resample(rule='A').min()['Close'].plot(title='Annual Min Close Price')
+    plt.show()
+
+    # Statistics and histograms
+    data['Log Return'] = np.log(data['Open'] / data['Open'].shift(1))
+    sns.histplot(data['Log Return'].dropna(), bins=50, kde=True)
+    plt.title('Log Return Histogram')
+    plt.show()
+
+    return data.describe().T
